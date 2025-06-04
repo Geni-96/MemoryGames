@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Number Sequence Memory Game</title>
+    <style>
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+        .sequence-display {
+            font-size: 48px;
+            margin: 20px;
+            min-height: 60px;
+            letter-spacing: 10px;
+        }
+        .input-section {
+            margin: 20px;
+        }
+        input {
+            padding: 10px;
+            font-size: 24px;
+            width: 200px;
+            text-align: center;
+            margin-right: 10px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            margin: 5px;
+        }
+        .stats {
+            margin: 20px;
+            text-align: center;
+            font-size: 18px;
+        }
+        .home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background-color: #4CAF50;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <button class="home-button" onclick="window.location.href='index.html'">Home</button>
+        <h1>Number Sequence Memory Game</h1>
+        <div class="stats">
+            <p>Level: <span id="level">1</span></p>
+            <p>Score: <span id="score">0</span></p>
+            <p>High Score: <span id="highScore">0</span></p>
+        </div>
+        <div class="sequence-display" id="sequenceDisplay"></div>
+        <div class="input-section">
+            <input type="number" id="userInput" placeholder="Enter the number..." disabled>
+            <button onclick="checkAnswer()" id="submitBtn" disabled>Submit</button>
+        </div>
+        <button onclick="startGame()">Start New Game</button>
+    </div>
+
+    <script>
+        let currentLevel = 1;
+        let score = 0;
+        let highScore = localStorage.getItem('numberSequenceHighScore') || 0;
+        let currentSequence = '';
+        
+        document.getElementById('highScore').textContent = highScore;
+
+        function startGame() {
+            currentLevel = 1;
+            score = 0;
+            updateStats();
+            showSequence();
+        }
+
+        function generateSequence(length) {
+            let sequence = '';
+            for(let i = 0; i < length; i++) {
+                sequence += Math.floor(Math.random() * 10);
+            }
+            return sequence;
+        }
+
+        function showSequence() {
+            const display = document.getElementById('sequenceDisplay');
+            const userInput = document.getElementById('userInput');
+            const submitBtn = document.getElementById('submitBtn');
+            
+            currentSequence = generateSequence(currentLevel + 2);
+            display.textContent = currentSequence;
+            userInput.value = '';
+            userInput.disabled = true;
+            submitBtn.disabled = true;
+
+            setTimeout(() => {
+                display.textContent = '?'.repeat(currentSequence.length);
+                userInput.disabled = false;
+                submitBtn.disabled = false;
+                userInput.focus();
+            }, 2000 + (currentLevel * 500));
+        }
+
+        function checkAnswer() {
+            const userInput = document.getElementById('userInput');
+            if (userInput.value === currentSequence) {
+                score += currentLevel * 10;
+                currentLevel++;
+                if (score > highScore) {
+                    highScore = score;
+                    localStorage.setItem('numberSequenceHighScore', highScore);
+                    document.getElementById('highScore').textContent = highScore;
+                }
+                alert('Correct! Next level...');
+            } else {
+                alert(`Wrong! The sequence was: ${currentSequence}`);
+                currentLevel = Math.max(1, currentLevel - 1);
+            }
+            updateStats();
+            showSequence();
+        }
+
+        function updateStats() {
+            document.getElementById('level').textContent = currentLevel;
+            document.getElementById('score').textContent = score;
+        }
+
+        document.getElementById('userInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                checkAnswer();
+            }
+        });
+    </script>
+</body>
+</html>

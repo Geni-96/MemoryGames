@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Memory Games Hub</title>
+    <style>
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            gap: 20px;
+        }
+        .game-choice {
+            width: 300px;
+            padding: 20px;
+            font-size: 18px;
+            cursor: pointer;
+            background-color: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            transition: transform 0.2s;
+        }
+        .game-choice:hover {
+            transform: scale(1.05);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Choose Your Memory Game</h1>
+        <button class="game-choice" onclick="window.location.href='card-matching.html'">
+            Card Matching Game
+        </button>
+        <button class="game-choice" onclick="window.location.href='word-memory.html'">
+            Word Memory Game
+        </button>
+        <button class="game-choice" onclick="window.location.href='number-sequence.html'">
+            Number Sequence Game
+        </button>
+        <button class="game-choice" onclick="window.location.href='color-pattern.html'">
+            Color Pattern Memory
+        </button>
+        <button class="game-choice" onclick="window.location.href='speed-math.html'">
+            Speed Math Memory
+        </button>
+        <button class="game-choice" onclick="window.location.href='audio-pattern.html'">
+            Audio Pattern Memory
+        </button>
+        <button class="game-choice" style="background-color: #4CAF50" onclick="window.location.href='how-to-play.html'">
+            How to Play
+        </button>
+    </div>
+</body>
+</html>

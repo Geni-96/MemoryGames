@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Audio Pattern Memory</title>
+    <style>
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+        .button-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 150px);
+            gap: 15px;
+            margin: 20px;
+        }
+        .sound-button {
+            height: 150px;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: transform 0.1s;
+            border: none;
+        }
+        .sound-button:active {
+            transform: scale(0.95);
+        }
+        .sound-button.playing {
+            transform: scale(0.95);
+            opacity: 0.8;
+        }
+        #btn0 { background-color: #FF0000; }
+        #btn1 { background-color: #00FF00; }
+        #btn2 { background-color: #0000FF; }
+        #btn3 { background-color: #FFFF00; }
+        .stats {
+            margin: 20px;
+            text-align: center;
+            font-size: 18px;
+        }
+        .home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:not(.sound-button) {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            margin: 5px;
+        }
+        .message {
+            font-size: 24px;
+            margin: 20px;
+            min-height: 30px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <button class="home-button" onclick="window.location.href='index.html'">Home</button>
+        <h1>Audio Pattern Memory</h1>
+        <div class="stats">
+            <p>Level: <span id="level">1</span></p>
+            <p>Score: <span id="score">0</span></p>
+            <p>High Score: <span id="highScore">0</span></p>
+        </div>
+        <div class="message" id="message">Press Start to begin!</div>
+        <div class="button-grid">
+            <button class="sound-button" id="btn0"></button>
+            <button class="sound-button" id="btn1"></button>
+            <button class="sound-button" id="btn2"></button>
+            <button class="sound-button" id="btn3"></button>
+        </div>
+        <button onclick="startGame()" id="startBtn">Start Game</button>
+    </div>
+
+    <script>
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const frequencies = [261.63, 329.63, 392.00, 523.25]; // C4, E4, G4, C5
+        let sequence = [];
+        let playerSequence = [];
+        let level = 1;
+        let score = 0;
+        let highScore = localStorage.getItem('audioPatternHighScore') || 0;
+        let isPlaying = false;
+
+        document.getElementById('highScore').textContent = highScore;
+
+        function playTone(frequency, duration = 0.5) {
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.type = 'sine';
+            oscillator.frequency.value = frequency;
+            
+            gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+            gainNode.gain.linearRampToValueAtTime(0.5, audioContext.currentTime + 0.1);
+            gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + duration);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + duration);
+        }
+
+        function startGame() {
+            sequence = [];
+            playerSequence = [];
+            level = 1;
+            score = 0;
+            updateStats();
+            nextSequence();
+        }
+
+        function nextSequence() {
+            playerSequence = [];
+            sequence.push(Math.floor(Math.random() * 4));
+            document.getElementById('message').textContent = 'Watch and listen...';
+            document.getElementById('startBtn').disabled = true;
+            isPlaying = true;
+            
+            let i = 0;
+            const interval = setInterval(() => {
+                if (i >= sequence.length) {
+                    clearInterval(interval);
+                    setTimeout(() => {
+                        document.getElementById('message').textContent = 'Your turn!';
+                        isPlaying = false;
+                    }, 500);
+                    return;
+                }
+                
+                playButton(sequence[i]);
+                i++;
+            }, 1000);
+        }
+
+        function playButton(index) {
+            const button = document.getElementById(`btn${index}`);
+            button.classList.add('playing');
+            playTone(frequencies[index]);
+            setTimeout(() => button.classList.remove('playing'), 500);
+        }
+
+        function handleClick(index) {
+            if (isPlaying) return;
+            
+            playButton(index);
+            playerSequence.push(index);
+            
+            if (playerSequence[playerSequence.length - 1] !== sequence[playerSequence.length - 1]) {
+                gameOver();
+                return;
+            }
+            
+            if (playerSequence.length === sequence.length) {
+                score += level * 10;
+                level++;
+                if (score > highScore) {
+                    highScore = score;
+                    localStorage.setItem('audioPatternHighScore', highScore);
+                    document.getElementById('highScore').textContent = highScore;
+                }
+                updateStats();
+                setTimeout(nextSequence, 1000);
+            }
+        }
+
+        function gameOver() {
+            document.getElementById('message').textContent = `Game Over! Final Score: ${score}`;
+            document.getElementById('startBtn').disabled = false;
+            isPlaying = false;
+        }
+
+        function updateStats() {
+            document.getElementById('level').textContent = level;
+            document.getElementById('score').textContent = score;
+        }
+
+        // Add click handlers to buttons
+        for (let i = 0; i < 4; i++) {
+            document.getElementById(`btn${i}`).onclick = () => handleClick(i);
+        }
+    </script>
+</body>
+</html>

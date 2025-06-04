@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Word Memory Game</title>
+    <style>
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+        .word-display {
+            font-size: 24px;
+            margin: 20px;
+            min-height: 50px;
+        }
+        .input-section {
+            margin: 20px;
+        }
+        input {
+            padding: 10px;
+            font-size: 18px;
+            margin-right: 10px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            margin: 5px;
+        }
+        .stats {
+            margin: 20px;
+            text-align: center;
+        }
+        .home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background-color: #4CAF50;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <button class="home-button" onclick="window.location.href='index.html'">Home</button>
+        <h1>Word Memory Game</h1>
+        <div class="stats">
+            <p>Level: <span id="level">1</span></p>
+            <p>Score: <span id="score">0</span></p>
+        </div>
+        <div class="word-display" id="wordDisplay"></div>
+        <div class="input-section">
+            <input type="text" id="userInput" placeholder="Type the word you saw..." disabled>
+            <button onclick="checkAnswer()" id="submitBtn" disabled>Submit</button>
+        </div>
+        <button onclick="startGame()">Start New Game</button>
+    </div>
+
+    <script>
+        let currentLevel = 1;
+        let score = 0;
+        let currentWord = '';
+        const words = [
+            'apple', 'banana', 'orange', 'grape', 'mango',
+            'elephant', 'giraffe', 'zebra', 'lion', 'tiger',
+            'computer', 'keyboard', 'mouse', 'monitor', 'printer',
+            'javascript', 'python', 'java', 'ruby', 'php'
+        ];
+
+        function startGame() {
+            currentLevel = 1;
+            score = 0;
+            updateStats();
+            showWord();
+        }
+
+        function showWord() {
+            const wordDisplay = document.getElementById('wordDisplay');
+            const userInput = document.getElementById('userInput');
+            const submitBtn = document.getElementById('submitBtn');
+            
+            currentWord = words[Math.floor(Math.random() * words.length)];
+            wordDisplay.textContent = currentWord;
+            userInput.value = '';
+            userInput.disabled = true;
+            submitBtn.disabled = true;
+
+            // Hide word after delay based on level
+            setTimeout(() => {
+                wordDisplay.textContent = '???';
+                userInput.disabled = false;
+                submitBtn.disabled = false;
+                userInput.focus();
+            }, 2000 + (currentLevel * 500));
+        }
+
+        function checkAnswer() {
+            const userInput = document.getElementById('userInput');
+            if (userInput.value.toLowerCase() === currentWord.toLowerCase()) {
+                score += currentLevel * 10;
+                currentLevel++;
+                alert('Correct! Next level...');
+            } else {
+                alert(`Wrong! The word was: ${currentWord}`);
+                currentLevel = Math.max(1, currentLevel - 1);
+            }
+            updateStats();
+            showWord();
+        }
+
+        function updateStats() {
+            document.getElementById('level').textContent = currentLevel;
+            document.getElementById('score').textContent = score;
+        }
+
+        // Allow Enter key to submit
+        document.getElementById('userInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                checkAnswer();
+            }
+        });
+    </script>
+</body>
+</html>

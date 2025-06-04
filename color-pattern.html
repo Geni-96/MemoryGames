@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Color Pattern Memory Game</title>
+    <style>
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+        .color-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 100px);
+            gap: 10px;
+            margin: 20px;
+        }
+        .color-cell {
+            width: 100px;
+            height: 100px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: opacity 0.3s;
+        }
+        .stats {
+            margin: 20px;
+            text-align: center;
+            font-size: 18px;
+        }
+        .home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            margin: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <button class="home-button" onclick="window.location.href='index.html'">Home</button>
+        <h1>Color Pattern Memory Game</h1>
+        <div class="stats">
+            <p>Level: <span id="level">1</span></p>
+            <p>Score: <span id="score">0</span></p>
+        </div>
+        <div class="color-grid" id="colorGrid"></div>
+        <button onclick="startGame()">Start New Game</button>
+    </div>
+
+    <script>
+        const colors = ['#FF0000', '#00FF00', '#0000FF', '#FFFF00', '#FF00FF', '#00FFFF'];
+        let sequence = [];
+        let playerSequence = [];
+        let level = 1;
+        let score = 0;
+        
+        function createGrid() {
+            const grid = document.getElementById('colorGrid');
+            grid.innerHTML = '';
+            colors.forEach((color, index) => {
+                const cell = document.createElement('div');
+                cell.className = 'color-cell';
+                cell.style.backgroundColor = color;
+                cell.style.opacity = '0.7';
+                cell.onclick = () => handleClick(index);
+                grid.appendChild(cell);
+            });
+        }
+
+        function startGame() {
+            level = 1;
+            score = 0;
+            updateStats();
+            sequence = [];
+            playerSequence = [];
+            createGrid();
+            nextSequence();
+        }
+
+        function nextSequence() {
+            sequence.push(Math.floor(Math.random() * colors.length));
+            playerSequence = [];
+            showSequence();
+        }
+
+        function showSequence() {
+            const cells = document.querySelectorAll('.color-cell');
+            cells.forEach(cell => cell.style.pointerEvents = 'none');
+            
+            let i = 0;
+            const interval = setInterval(() => {
+                if (i >= sequence.length) {
+                    clearInterval(interval);
+                    cells.forEach(cell => {
+                        cell.style.opacity = '0.7';
+                        cell.style.pointerEvents = 'auto';
+                    });
+                    return;
+                }
+                
+                cells.forEach(cell => cell.style.opacity = '0.7');
+                cells[sequence[i]].style.opacity = '1';
+                
+                setTimeout(() => {
+                    cells[sequence[i]].style.opacity = '0.7';
+                }, 500);
+                
+                i++;
+            }, 800);
+        }
+
+        function handleClick(index) {
+            const cells = document.querySelectorAll('.color-cell');
+            cells[index].style.opacity = '1';
+            setTimeout(() => cells[index].style.opacity = '0.7', 300);
+            
+            playerSequence.push(index);
+            
+            if (playerSequence[playerSequence.length - 1] !== sequence[playerSequence.length - 1]) {
+                alert('Game Over! Starting new game...');
+                startGame();
+                return;
+            }
+            
+            if (playerSequence.length === sequence.length) {
+                score += level * 10;
+                level++;
+                updateStats();
+                setTimeout(nextSequence, 1000);
+            }
+        }
+
+        function updateStats() {
+            document.getElementById('level').textContent = level;
+            document.getElementById('score').textContent = score;
+        }
+
+        createGrid();
+    </script>
+</body>
+</html>

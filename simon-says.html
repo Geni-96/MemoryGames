@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Simon Says Game</title>
+    <style>
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+        .game-board {
+            display: grid;
+            grid-template-columns: repeat(2, 150px);
+            gap: 10px;
+            margin: 20px;
+        }
+        .game-button {
+            width: 150px;
+            height: 150px;
+            border-radius: 15px;
+            cursor: pointer;
+            opacity: 0.7;
+            transition: opacity 0.3s;
+        }
+        .red { background-color: #FF0000; }
+        .green { background-color: #00FF00; }
+        .blue { background-color: #0000FF; }
+        .yellow { background-color: #FFFF00; }
+        .stats {
+            margin: 20px;
+            text-align: center;
+            font-size: 18px;
+        }
+        .home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            margin: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <button class="home-button" onclick="window.location.href='index.html'">Home</button>
+        <h1>Simon Says</h1>
+        <div class="stats">
+            <p>Level: <span id="level">1</span></p>
+            <p>High Score: <span id="highScore">0</span></p>
+        </div>
+        <div class="game-board">
+            <div class="game-button red" data-color="red"></div>
+            <div class="game-button green" data-color="green"></div>
+            <div class="game-button blue" data-color="blue"></div>
+            <div class="game-button yellow" data-color="yellow"></div>
+        </div>
+        <button onclick="startGame()">Start New Game</button>
+    </div>
+
+    <script>
+        let sequence = [];
+        let playerSequence = [];
+        let level = 1;
+        let highScore = localStorage.getItem('simonHighScore') || 0;
+        let canClick = false;
+        
+        document.getElementById('highScore').textContent = highScore;
+
+        function startGame() {
+            sequence = [];
+            playerSequence = [];
+            level = 1;
+            updateStats();
+            nextTurn();
+        }
+
+        function nextTurn() {
+            playerSequence = [];
+            sequence.push(getRandomColor());
+            updateStats();
+            showSequence();
+        }
+
+        function showSequence() {
+            canClick = false;
+            let i = 0;
+            const interval = setInterval(() => {
+                if (i >= sequence.length) {
+                    clearInterval(interval);
+                    canClick = true;
+                    return;
+                }
+                
+                activateButton(sequence[i]);
+                i++;
+            }, 800);
+        }
+
+        function activateButton(color) {
+            const button = document.querySelector(`[data-color="${color}"]`);
+            button.style.opacity = '1';
+            setTimeout(() => button.style.opacity = '0.7', 500);
+        }
+
+        function handleClick(event) {
+            if (!canClick) return;
+            
+            const color = event.target.dataset.color;
+            if (!color) return;
+            
+            activateButton(color);
+            playerSequence.push(color);
+            
+            if (playerSequence[playerSequence.length - 1] !== sequence[playerSequence.length - 1]) {
+                gameOver();
+                return;
+            }
+            
+            if (playerSequence.length === sequence.length) {
+                level++;
+                if (level > highScore) {
+                    highScore = level - 1;
+                    localStorage.setItem('simonHighScore', highScore);
+                    document.getElementById('highScore').textContent = highScore;
+                }
+                setTimeout(nextTurn, 1000);
+            }
+        }
+
+        function gameOver() {
+            alert(`Game Over! You reached level ${level}`);
+            startGame();
+        }
+
+        function getRandomColor() {
+            const colors = ['red', 'green', 'blue', 'yellow'];
+            return colors[Math.floor(Math.random() * colors.length)];
+        }
+
+        function updateStats() {
+            document.getElementById('level').textContent = level;
+        }
+
+        document.querySelector('.game-board').addEventListener('click', handleClick);
+    </script>
+</body>
+</html>
